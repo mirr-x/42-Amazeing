@@ -74,6 +74,7 @@ def main() -> None:
     maze.grid[0][0]["visited"] = True
     print(".................")
     print(maze.grid)
+    
 
 
 if __name__ == "__main__":
