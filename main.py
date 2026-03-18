@@ -1,4 +1,5 @@
-from typing import Tuple, Any
+from typing import Tuple
+import json
 
 class Maze:
     env = "config.txt"
@@ -48,7 +49,7 @@ class Maze:
         print(f"PERFECT: {self.perfect}")
 
         print("-------------------------------------")
-        print(self.grid)
+        print(json.dumps(self.grid, indent=2))
 
     def build_grid(self) -> None:
         """ Build grid using width and height """
@@ -66,6 +67,34 @@ class Maze:
                 lis.append(cell)
             self.grid.append(lis)
 
+    def get_neighbors_cells(self, cell: Tuple[int, int]) -> list[tuple[int, int]]:
+        """ Get only neigbors of an cell that are not visited 
+            return: 
+                    list of cords (of neigbors)
+        """
+        neigbors: list[tuple[int, int]] = []
+        y, x = cell
+        # check north
+        if y -  1 >= 0 and self.grid[y -  1][x]["visited"] == False:
+            neigbors.append((y - 1, x))
+        # check east
+        if x + 1 < self.width and self.grid[y][x + 1]["visited"] == False:
+            neigbors.append((y, x + 1))
+        # check south
+        if y + 1 < self.height and self.grid[y + 1][x]["visited"] == False:
+            neigbors.append((y + 1, x))
+        # check west
+        if x - 1 >= 0 and self.grid[y][x - 1]["visited"] == False:
+            neigbors.append((y, x - 1))
+
+        return neigbors
+
+    def remove_walls(self, cell1: Tuple[int, int], cell2: Tuple[int, int]) -> None:
+        """ Remove walls bettwen two cells """
+        y1, x1 = cell1
+        y2, x2 = cell2
+        # check North
+
 
 def main() -> None:
     maze = Maze()
@@ -73,7 +102,9 @@ def main() -> None:
     maze.print_data()
     maze.grid[0][0]["visited"] = True
     print(".................")
-    print(maze.grid)
+    print(maze.get_neighbors_cells((1, 1)))
+    print(".................")
+
     
 
 
