@@ -6,6 +6,7 @@ class Maze:
     env = "config.txt"
     hex_file = ""
     def __init__(self) -> None:
+        """Initialize maze defaults, load config data, and validate endpoints."""
         self.width: int = 3
         self.height: int = 3
         self.entry: Tuple[int, int]
@@ -47,6 +48,7 @@ class Maze:
             exit(1)
 
     def _validate_entry_exit(self) -> None:
+        """Validate that entry and exit points are within bounds and not equal"""
         try:
             if not (0 <= self.entry[0] < self.height and 0 <= self.entry[1] < self.width):
                 raise ValueError("Entry point out of bounds")
@@ -59,6 +61,7 @@ class Maze:
             exit(1)
 
     def _cell_to_hex(self, cell: Tuple[int, int]) -> str:
+        """Convert one cell wall state to a single hexadecimal character."""
         y, x = cell
         val = 0
         cel = self.grid[y][x]
@@ -69,6 +72,7 @@ class Maze:
         return hex(val)[2:].upper()
 
     def save_to_file(self) -> None:
+        """Write the current maze grid to the configured output file."""
         try:
             with open(self.output_file, "w") as f:
                 for y in range(self.height):
@@ -79,6 +83,7 @@ class Maze:
             print("save_to_file(): ERROR")
 
     def print_data(self) -> None: # delet me 
+        """Print config data and dump the grid for debugging purposes."""
         print(f"WIDTH: {self.width}")
         print(f"HEIGHT: {self.height}")
         print(f"ENTRY: {self.entry}")
@@ -93,9 +98,9 @@ class Maze:
 
     def build_grid(self) -> None:
         """ Build grid using width and height """
-        for j in range(self.height):
+        for _ in range(self.height):
             lis: list[dict[str, bool]] = []
-            for i in range(self.width):
+            for _ in range(self.width):
                 cell = {
                         "visited": False,
                         "N": True,
@@ -103,7 +108,6 @@ class Maze:
                         "S": True,
                         "W": True
                     }
-                print((j, i))
                 lis.append(cell)
             self.grid.append(lis)
 
@@ -153,6 +157,7 @@ class Maze:
             print("Error: Cells dosent much")
 
     def build_maze(self) -> None:
+        """Generate the maze using iterative DFS with backtracking."""
         start = self.entry
         stack: list[Tuple[int, int]] = [start]
         y, x = start
@@ -169,13 +174,10 @@ class Maze:
 
 
 def main() -> None:
+    """Create a maze, generate it, and save the result to file."""
     maze = Maze()
     maze.build_grid()
-    # maze.grid[1][1]["visited"] = True
-    # maze.remove_walls((0, 0), (0, 1))
     maze.print_data()
-    print(".................")
-    # print(maze.get_neighbors_cells((1, 1)))
     print(".................")
     maze.build_maze()
     maze.save_to_file()
