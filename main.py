@@ -1,8 +1,10 @@
 from typing import Tuple
 import json
+from random import choice
 
 class Maze:
     env = "config.txt"
+    hex_file = ""
     def __init__(self) -> None:
         self.width: int = 3
         self.height: int = 3
@@ -12,6 +14,7 @@ class Maze:
         self.perfect: bool
         self.grid: list[list[dict[str, bool]]] = []
         self._load_env_data()
+        self._validate_entry_exit()
 
     def _load_env_data(self) -> None:
         """ Load data from config.txt to local attrbutes """
@@ -35,10 +38,45 @@ class Maze:
                         self.output_file = line[1]    
         except FileNotFoundError:
             print("ERROR: file not found")
+            exit(1)
         except PermissionError:
             print("ERROR: file permissions")
+            exit(1)
         except Exception as e:
             print(f"Unknoun ERROR: {e}")
+            exit(1)
+
+    def _validate_entry_exit(self) -> None:
+        try:
+            if not (0 <= self.entry[0] < self.height and 0 <= self.entry[1] < self.width):
+                raise ValueError("Entry point out of bounds")
+            if not (0 <= self.exit[0] < self.height and 0 <= self.exit[1] < self.width):
+                raise ValueError("Exit point out of bounds")
+            if self.entry == self.exit:
+                raise ValueError("Entry must != Exit")
+        except ValueError as e:
+            print(f"ERROR: Invalid entry/exit coordinates - {e}")
+            exit(1)
+
+    def _cell_to_hex(self, cell: Tuple[int, int]) -> str:
+        y, x = cell
+        val = 0
+        cel = self.grid[y][x]
+        if cel["N"]: val += 1
+        if cel["E"]: val += 2
+        if cel["S"]: val += 4
+        if cel["W"]: val += 8
+        return hex(val)[2:].upper()
+
+    def save_to_file(self) -> None:
+        try:
+            with open(self.output_file, "w") as f:
+                for y in range(self.height):
+                    for x in range(self.width):
+                        f.write(self._cell_to_hex((y, x)))
+                    f.write("\n")
+        except Exception:
+            print("save_to_file(): ERROR")
 
     def print_data(self) -> None: # delet me 
         print(f"WIDTH: {self.width}")
@@ -49,6 +87,8 @@ class Maze:
         print(f"PERFECT: {self.perfect}")
 
         print("-------------------------------------")
+        with open("2darr", "w") as f:
+            f.write(json.dumps(self.grid, indent=2))
         print(json.dumps(self.grid, indent=2))
 
     def build_grid(self) -> None:
@@ -94,20 +134,52 @@ class Maze:
         y1, x1 = cell1
         y2, x2 = cell2
         # check North
+        if y1 - 1 == y2 and x1 == x2:
+            self.grid[y1][x1]["N"] = False
+            self.grid[y2][x2]["S"] = False
+        # check East
+        elif y1 == y2 and x1 + 1 == x2:
+            self.grid[y1][x1]["E"] = False
+            self.grid[y2][x2]["W"] = False
+        # check South
+        elif y1 + 1 == y2 and x1 == x2:
+            self.grid[y1][x1]["S"] = False
+            self.grid[y2][x2]["N"] = False
+        # check West
+        elif y1 == y2 and x1 - 1 == x2:
+            self.grid[y1][x1]["W"] = False
+            self.grid[y2][x2]["E"] = False
+        else:
+            print("Error: Cells dosent much")
+
+    def build_maze(self) -> None:
+        start = self.entry
+        stack: list[Tuple[int, int]] = [start]
+        y, x = start
+        self.grid[y][x]["visited"] = True
+        while stack:
+            neighbors = self.get_neighbors_cells(stack[-1])
+            if neighbors:
+                y1, x1 = neighbor = choice(neighbors)
+                self.remove_walls(stack[-1], neighbor)
+                self.grid[y1][x1]["visited"] = True
+                stack.append(neighbor)
+            else:
+                stack.pop()
 
 
 def main() -> None:
     maze = Maze()
     maze.build_grid()
+    # maze.grid[1][1]["visited"] = True
+    # maze.remove_walls((0, 0), (0, 1))
     maze.print_data()
-    maze.grid[0][0]["visited"] = True
     print(".................")
-    print(maze.get_neighbors_cells((1, 1)))
+    # print(maze.get_neighbors_cells((1, 1)))
     print(".................")
-
-    
+    maze.build_maze()
+    maze.save_to_file()
 
 
 if __name__ == "__main__":
     main()
-

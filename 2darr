@@ -1,0 +1,71 @@
+[
+  [
+    {
+      "visited": false,
+      "N": true,
+      "E": true,
+      "S": true,
+      "W": true
+    },
+    {
+      "visited": false,
+      "N": true,
+      "E": true,
+      "S": true,
+      "W": true
+    },
+    {
+      "visited": false,
+      "N": true,
+      "E": true,
+      "S": true,
+      "W": true
+    }
+  ],
+  [
+    {
+      "visited": false,
+      "N": true,
+      "E": true,
+      "S": true,
+      "W": true
+    },
+    {
+      "visited": false,
+      "N": true,
+      "E": true,
+      "S": true,
+      "W": true
+    },
+    {
+      "visited": false,
+      "N": true,
+      "E": true,
+      "S": true,
+      "W": true
+    }
+  ],
+  [
+    {
+      "visited": false,
+      "N": true,
+      "E": true,
+      "S": true,
+      "W": true
+    },
+    {
+      "visited": false,
+      "N": true,
+      "E": true,
+      "S": true,
+      "W": true
+    },
+    {
+      "visited": false,
+      "N": true,
+      "E": true,
+      "S": true,
+      "W": true
+    }
+  ]
+]
