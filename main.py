@@ -72,9 +72,10 @@ class Maze:
         try:
             with open(self.output_file, "w") as f:
                 for y in range(self.height):
+                    line = ''
                     for x in range(self.width):
-                        f.write(self._cell_to_hex((y, x)))
-                    f.write("\n")
+                        line += self._cell_to_hex((y, x))
+                    f.write(line + "\n")
         except Exception:
             print("save_to_file(): ERROR")
 
