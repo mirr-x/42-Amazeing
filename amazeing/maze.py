@@ -1,19 +1,23 @@
-from typing import Tuple
 import json
 from random import choice
 
+import time
+from .draw_maze import DrawMaze
+from .types import Coord
+
 class Maze:
     env = "config.txt"
-    hex_file = ""
+    hex_file = "hex_maze"
     def __init__(self) -> None:
         """Initialize maze defaults, load config data, and validate endpoints."""
         self.width: int = 3
         self.height: int = 3
-        self.entry: Tuple[int, int]
-        self.exit: Tuple[int, int]
+        self.entry: Coord
+        self.exit: Coord
         self.output_file : str = "maze.txt"
         self.perfect: bool
         self.grid: list[list[dict[str, bool]]] = []
+        self.drawer = DrawMaze(self)
         self._load_env_data()
         self._validate_entry_exit()
 
@@ -60,7 +64,7 @@ class Maze:
             print(f"ERROR: Invalid entry/exit coordinates - {e}")
             exit(1)
 
-    def _cell_to_hex(self, cell: Tuple[int, int]) -> str:
+    def _cell_to_hex(self, cell: Coord) -> str:
         """Convert one cell wall state to a single hexadecimal character."""
         y, x = cell
         val = 0
@@ -74,11 +78,13 @@ class Maze:
     def save_to_file(self) -> None:
         """Write the current maze grid to the configured output file."""
         try:
-            with open(self.output_file, "w") as f:
+            with open(self.hex_file, "w") as f:
                 for y in range(self.height):
                     for x in range(self.width):
                         f.write(self._cell_to_hex((y, x)))
                     f.write("\n")
+                f.write(f"ENTRY {self.entry[0]},{self.entry[1]}\n")
+                f.write(f"EXIT {self.exit[0]},{self.exit[1]}\n")
         except Exception:
             print("save_to_file(): ERROR")
 
@@ -111,12 +117,12 @@ class Maze:
                 lis.append(cell)
             self.grid.append(lis)
 
-    def get_neighbors_cells(self, cell: Tuple[int, int]) -> list[tuple[int, int]]:
+    def get_neighbors_cells(self, cell: Coord) -> list[Coord]:
         """ Get only neigbors of an cell that are not visited 
             return: 
                     list of cords (of neigbors)
         """
-        neigbors: list[tuple[int, int]] = []
+        neigbors: list[Coord] = []
         y, x = cell
         # check north
         if y -  1 >= 0 and self.grid[y -  1][x]["visited"] == False:
@@ -133,7 +139,7 @@ class Maze:
 
         return neigbors
 
-    def remove_walls(self, cell1: Tuple[int, int], cell2: Tuple[int, int]) -> None:
+    def remove_walls(self, cell1: Coord, cell2: Coord) -> None:
         """ Remove walls bettwen two cells """
         y1, x1 = cell1
         y2, x2 = cell2
@@ -159,11 +165,13 @@ class Maze:
     def build_maze(self) -> None:
         """Generate the maze using iterative DFS with backtracking."""
         start = self.entry
-        stack: list[Tuple[int, int]] = [start]
+        stack: list[Coord] = [start]
         y, x = start
         self.grid[y][x]["visited"] = True
         while stack:
             neighbors = self.get_neighbors_cells(stack[-1])
+            self.drawer.draw_maze(stack[-1])
+            time.sleep(0.5)
             if neighbors:
                 y1, x1 = neighbor = choice(neighbors)
                 self.remove_walls(stack[-1], neighbor)
@@ -171,17 +179,3 @@ class Maze:
                 stack.append(neighbor)
             else:
                 stack.pop()
-
-
-def main() -> None:
-    """Create a maze, generate it, and save the result to file."""
-    maze = Maze()
-    maze.build_grid()
-    maze.print_data()
-    print(".................")
-    maze.build_maze()
-    maze.save_to_file()
-
-
-if __name__ == "__main__":
-    main()
