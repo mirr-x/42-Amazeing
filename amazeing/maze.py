@@ -1,9 +1,22 @@
 import json
 from random import choice
 
-import time
 from .draw_maze import DrawMaze
 from .types import Coord
+
+PATTERN_42 = [
+    (0, 0),
+    (1, 0),
+    (2, 0), (2, 1), (2, 2),
+    (3, 2),
+    (4, 2),
+    # digit "2"
+    (0, 4), (0, 5), (0, 6),
+    (1, 6),
+    (2, 4), (2, 5), (2, 6),
+    (3, 4),
+    (4, 4), (4, 5), (4, 6),
+]
 
 class Maze:
     env = "config.txt"
@@ -161,6 +174,21 @@ class Maze:
             self.grid[y2][x2]["E"] = False
         else:
             print("Error: Cells dosent much")
+        
+    def _place_42_pattern(self) -> None:
+        
+        if self.width < 9 or self.height < 7:
+            print("WARNING: maze too small to draw 42 pattern")
+            return
+ 
+       
+        start_row = (self.height - 5) // 2
+        start_col = (self.width - 7) // 2
+ 
+        for (dr, dc) in PATTERN_42:
+            y = start_row + dr
+            x = start_col + dc
+            self.grid[y][x]["visited"] = True
 
     def build_maze(self) -> None:
         """Generate the maze using iterative DFS with backtracking."""
@@ -168,10 +196,11 @@ class Maze:
         stack: list[Coord] = [start]
         y, x = start
         self.grid[y][x]["visited"] = True
+
+        self._place_42_pattern()   # ← ADD THIS LINE
+
         while stack:
             neighbors = self.get_neighbors_cells(stack[-1])
-            self.drawer.draw_maze(stack[-1])
-            time.sleep(0.5)
             if neighbors:
                 y1, x1 = neighbor = choice(neighbors)
                 self.remove_walls(stack[-1], neighbor)
