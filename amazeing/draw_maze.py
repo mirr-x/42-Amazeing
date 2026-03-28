@@ -1,59 +1,103 @@
 from typing import Protocol
-
 import os
-
 from .types import Coord
 
 
 class MazeLike(Protocol):
     width: int
     height: int
+    entry: Coord
+    exit: Coord
     grid: list[list[dict[str, bool]]]
 
 
 class DrawMaze:
+    RESET  = "\033[0m"
+    WHITE  = "\033[97m"           # wall       → white ██
+    BLACK  = "\033[30m"           # passage    → black ██
+    GRAY   = "\033[38;5;145m"     # 42 cells   → gray ██  (38 = foreground)
+    PURPLE = "\033[95m"           # entry      → purple ██
+    RED    = "\033[91m"           # exit       → red ██
+    BLOCK  = "██"
+    COLORS = [
+    "\033[97m",   # white
+    "\033[93m",   # yellow
+    "\033[92m",   # green
+    "\033[96m",   # cyan
+    "\033[94m",   # blue
+    "\033[91m",   # red
+    ]
+    _color_index = 0
+
+    def rotate_color(self) -> None:
+        """Cycle to the next wall color."""
+        self._color_index = (self._color_index + 1) % len(self.COLORS)
+        self.WHITE = self.COLORS[self._color_index]
+
     def __init__(self, maze: MazeLike) -> None:
         self.maze = maze
 
-    def _print_roof(self, cells: int, row: int) -> None:
-        for i in range(cells):
-            if self.maze.grid[row][i]["N"]:
-                print("+---", end="")
-            else:
-                print("+   ", end="")
-        print("+")
+    def _is_42_cell(self, y: int, x: int) -> bool:
+        """42 cell = visited True + ALL 4 walls still True."""
+        c = self.maze.grid[y][x]
+        return c["visited"] and c["N"] and c["E"] and c["S"] and c["W"]
 
-    def _print_walls(self, cells: int, row: int, current_cell: Coord) -> None:
-        for i in range(cells):
-            if self.maze.grid[row][i]["W"]:
-                print("|", end="")
-            else:
-                print(" ", end="")
-            if (row, i) == current_cell:
-                print(" * ", end="")
-            elif self.maze.grid[row][i]["visited"]:
-                print(" . ", end="")
-            else:
-                print("   ", end="")
-        if self.maze.grid[row][cells - 1]["E"]:
-            print("|")
-        else:
-            print(" ")
+    def _build_render_grid(self) -> list[list[bool]]:
+        h = self.maze.height
+        w = self.maze.width
+        render = [[True] * (w * 2 + 1) for _ in range(h * 2 + 1)]
 
-    def _print_last_ground(self, cells: int, row: int):
-        for i in range(cells):
-            if self.maze.grid[row][i]["S"]:
-                print("+---", end="")
-            else:
-                print("+   ", end="")
-        print("+")
+        for y in range(h):
+            for x in range(w):
+                ry = y * 2 + 1
+                rx = x * 2 + 1
+                cell = self.maze.grid[y][x]
+
+                if self._is_42_cell(y, x):
+                    render[ry][rx] = False
+                    if y - 1 >= 0 and self._is_42_cell(y - 1, x):
+                        render[ry - 1][rx] = False
+                    if y + 1 < h and self._is_42_cell(y + 1, x):
+                        render[ry + 1][rx] = False
+                    if x - 1 >= 0 and self._is_42_cell(y, x - 1):
+                        render[ry][rx - 1] = False
+                    if x + 1 < w and self._is_42_cell(y, x + 1):
+                        render[ry][rx + 1] = False
+                    continue
+
+                render[ry][rx] = False
+                if not cell["N"]: render[ry - 1][rx] = False
+                if not cell["S"]: render[ry + 1][rx] = False
+                if not cell["W"]: render[ry][rx - 1] = False
+                if not cell["E"]: render[ry][rx + 1] = False
+
+        return render
 
     def draw_maze(self, current_cell: Coord) -> None:
+        """Draw maze — white walls, black passages, gray 42."""
         os.system("clear")
-        width = self.maze.width
-        height = self.maze.height
-        for row in range(height):
-            self._print_roof(width, row)
-            self._print_walls(width, row, current_cell)
-            if row == height - 1:
-                self._print_last_ground(width, row)
+        h = self.maze.height
+        w = self.maze.width
+        render = self._build_render_grid()
+
+        for ry in range(h * 2 + 1):
+            line = ""
+            for rx in range(w * 2 + 1):
+                if render[ry][rx]:
+                    line += self.WHITE + self.BLOCK + self.RESET
+                else:
+                    is_center = (ry % 2 == 1) and (rx % 2 == 1)
+                    if is_center:
+                        cy = (ry - 1) // 2
+                        cx = (rx - 1) // 2
+                        if self._is_42_cell(cy, cx):
+                            line += self.GRAY + self.BLOCK + self.RESET
+                        elif (cy, cx) == self.maze.entry:
+                            line += self.PURPLE + self.BLOCK + self.RESET
+                        elif (cy, cx) == self.maze.exit:
+                            line += self.RED + self.BLOCK + self.RESET
+                        else:
+                            line += self.BLACK + self.BLOCK + self.RESET
+                    else:
+                        line += self.BLACK + self.BLOCK + self.RESET
+            print(line)
