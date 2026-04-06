@@ -3,14 +3,15 @@ from amazeing import Maze_
 
 def main() -> None:
     """Create a maze, generate it, and save the result to file."""
-    maze = Maze_()
-    maze.build_grid()
-    maze.print_data()
-    print(".................")
-    maze.build_maze()
-    maze.save_to_file()
+    try:
+        maze = Maze_()
+        maze.build_grid()
+        print(".................")
+        maze.build_maze()
+        maze.save_to_file()
+    except KeyboardInterrupt:
+        print("\n\nYOU CLICKED CTRL + C\n")
 
 
 if __name__ == "__main__":
     main()
-

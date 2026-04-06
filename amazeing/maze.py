@@ -1,20 +1,22 @@
-import json
 from random import choice
-
 import time
 from .draw_maze import DrawMaze
 from .types import Coord
 
+
 class Maze:
     env = "config.txt"
     hex_file = "hex_maze"
+
     def __init__(self) -> None:
-        """Initialize maze defaults, load config data, and validate endpoints."""
+        """Initialize maze defaults, load config data,
+            and validate endpoints.
+        """
         self.width: int = 3
         self.height: int = 3
         self.entry: Coord
         self.exit: Coord
-        self.output_file : str = "maze.txt"
+        self.output_file: str = "maze.txt"
         self.perfect: bool
         self.grid: list[list[dict[str, bool]]] = []
         self.drawer = DrawMaze(self)
@@ -40,7 +42,7 @@ class Maze:
                     elif line[0] == "PERFECT":
                         self.perfect = True if line[1] == "True" else False
                     elif line[0] == "OUTPUT_FILE":
-                        self.output_file = line[1]    
+                        self.output_file = line[1]
         except FileNotFoundError:
             print("ERROR: file not found")
             exit(1)
@@ -52,11 +54,19 @@ class Maze:
             exit(1)
 
     def _validate_entry_exit(self) -> None:
-        """Validate that entry and exit points are within bounds and not equal"""
+        """Validate that entry and exit
+            points are within bounds and not equal
+        """
         try:
-            if not (0 <= self.entry[0] < self.height and 0 <= self.entry[1] < self.width):
+            if not (
+                0 <= self.entry[0] < self.height
+                and 0 <= self.entry[1] < self.width
+            ):
                 raise ValueError("Entry point out of bounds")
-            if not (0 <= self.exit[0] < self.height and 0 <= self.exit[1] < self.width):
+            if not (
+                0 <= self.exit[0] < self.height
+                and 0 <= self.exit[1] < self.width
+            ):
                 raise ValueError("Exit point out of bounds")
             if self.entry == self.exit:
                 raise ValueError("Entry must != Exit")
@@ -69,10 +79,14 @@ class Maze:
         y, x = cell
         val = 0
         cel = self.grid[y][x]
-        if cel["N"]: val += 1
-        if cel["E"]: val += 2
-        if cel["S"]: val += 4
-        if cel["W"]: val += 8
+        if cel["N"]:
+            val += 1
+        if cel["E"]:
+            val += 2
+        if cel["S"]:
+            val += 4
+        if cel["W"]:
+            val += 8
         return hex(val)[2:].upper()
 
     def save_to_file(self) -> None:
@@ -87,20 +101,6 @@ class Maze:
                 f.write(f"EXIT {self.exit[0]},{self.exit[1]}\n")
         except Exception:
             print("save_to_file(): ERROR")
-
-    def print_data(self) -> None: # delet me 
-        """Print config data and dump the grid for debugging purposes."""
-        print(f"WIDTH: {self.width}")
-        print(f"HEIGHT: {self.height}")
-        print(f"ENTRY: {self.entry}")
-        print(f"EXIT: {self.exit}")
-        print(f"OUTPUT_FILE: {self.output_file}")
-        print(f"PERFECT: {self.perfect}")
-
-        print("-------------------------------------")
-        with open("2darr", "w") as f:
-            f.write(json.dumps(self.grid, indent=2))
-        print(json.dumps(self.grid, indent=2))
 
     def build_grid(self) -> None:
         """ Build grid using width and height """
@@ -118,23 +118,23 @@ class Maze:
             self.grid.append(lis)
 
     def get_neighbors_cells(self, cell: Coord) -> list[Coord]:
-        """ Get only neigbors of an cell that are not visited 
-            return: 
+        """ Get only neigbors of an cell that are not visited
+            return:
                     list of cords (of neigbors)
         """
         neigbors: list[Coord] = []
         y, x = cell
         # check north
-        if y -  1 >= 0 and self.grid[y -  1][x]["visited"] == False:
+        if y - 1 >= 0 and not self.grid[y - 1][x]["visited"]:
             neigbors.append((y - 1, x))
         # check east
-        if x + 1 < self.width and self.grid[y][x + 1]["visited"] == False:
+        if x + 1 < self.width and not self.grid[y][x + 1]["visited"]:
             neigbors.append((y, x + 1))
         # check south
-        if y + 1 < self.height and self.grid[y + 1][x]["visited"] == False:
+        if y + 1 < self.height and not self.grid[y + 1][x]["visited"]:
             neigbors.append((y + 1, x))
         # check west
-        if x - 1 >= 0 and self.grid[y][x - 1]["visited"] == False:
+        if x - 1 >= 0 and not self.grid[y][x - 1]["visited"]:
             neigbors.append((y, x - 1))
 
         return neigbors

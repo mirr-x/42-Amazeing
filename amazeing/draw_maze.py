@@ -1,7 +1,5 @@
 from typing import Protocol
-
 import os
-
 from .types import Coord
 
 
@@ -30,7 +28,7 @@ class DrawMaze:
             else:
                 print(" ", end="")
             if (row, i) == current_cell:
-                print(" * ", end="")
+                print(" B ", end="")
             elif self.maze.grid[row][i]["visited"]:
                 print(" . ", end="")
             else:
