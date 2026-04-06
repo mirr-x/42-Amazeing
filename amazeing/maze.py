@@ -189,6 +189,57 @@ class Maze:
             y = start_row + dr
             x = start_col + dc
             self.grid[y][x]["visited"] = True
+<<<<<<< HEAD
+=======
+
+    def solve_bfs(self) -> list[Coord]:
+        from collections import deque
+
+        start = self.entry
+        end   = self.exit
+
+        visited: dict[Coord, Coord | None] = {start: None}
+        queue: deque[Coord] = deque([start])
+
+        while queue:
+            y, x = queue.popleft()
+
+           
+            if (y, x) == end:
+                path = []
+                current: Coord | None = end
+                while current is not None:
+                    path.append(current)
+                    current = visited[current] 
+                path.reverse()                  
+                return path
+
+            if y - 1 >= 0 and not self.grid[y][x]["N"]:
+                neighbor: Coord = (y - 1, x)
+                if neighbor not in visited:
+                    visited[neighbor] = (y, x)  # came FROM (y,x)
+                    queue.append(neighbor)
+
+            if x + 1 < self.width and not self.grid[y][x]["E"]:
+                neighbor = (y, x + 1)
+                if neighbor not in visited:
+                    visited[neighbor] = (y, x)
+                    queue.append(neighbor)
+
+            if y + 1 < self.height and not self.grid[y][x]["S"]:
+                neighbor = (y + 1, x)
+                if neighbor not in visited:
+                    visited[neighbor] = (y, x)
+                    queue.append(neighbor)
+
+            if x - 1 >= 0 and not self.grid[y][x]["W"]:
+                neighbor = (y, x - 1)
+                if neighbor not in visited:
+                    visited[neighbor] = (y, x)
+                    queue.append(neighbor)
+
+        return []  
+>>>>>>> 4578e57 (solve_pfs)
 
     def build_maze(self) -> None:
         """Generate the maze using iterative DFS with backtracking."""
