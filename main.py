@@ -9,6 +9,7 @@ def main() -> None:
         print(".................")
         maze.build_maze()
         maze.save_to_file()
+        maze.print_data()
     except KeyboardInterrupt:
         print("\n\nYOU CLICKED CTRL + C\n")
 

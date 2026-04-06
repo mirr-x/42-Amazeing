@@ -1,6 +1,6 @@
 from typing import Protocol
 import os
-from .types import Coord
+from .types import Coord, Colors
 
 
 class MazeLike(Protocol):
@@ -10,6 +10,7 @@ class MazeLike(Protocol):
 
 
 class DrawMaze:
+
     def __init__(self, maze: MazeLike) -> None:
         self.maze = maze
 
@@ -28,9 +29,9 @@ class DrawMaze:
             else:
                 print(" ", end="")
             if (row, i) == current_cell:
-                print(" B ", end="")
+                print(f"{Colors.RED.value} B {Colors.RESET.value}", end="")
             elif self.maze.grid[row][i]["visited"]:
-                print(" . ", end="")
+                print(f"{Colors.GREEN.value} . {Colors.RESET.value}", end="")
             else:
                 print("   ", end="")
         if self.maze.grid[row][cells - 1]["E"]:

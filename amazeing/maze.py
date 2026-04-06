@@ -2,11 +2,20 @@ from random import choice
 import time
 from .draw_maze import DrawMaze
 from .types import Coord
+from enum import Enum
+
+
+class Config(Enum):
+    WIDTH = "WIDTH"
+    HEIGHT = "HEIGHT"
+    ENTRY = "ENTRY"
+    EXIT = "EXIT"
+    OUTPUT_FILE = "OUTPUT_FILE"
+    PERFECT = "PERFECT"
 
 
 class Maze:
     env = "config.txt"
-    hex_file = "hex_maze"
 
     def __init__(self) -> None:
         """Initialize maze defaults, load config data,
@@ -28,21 +37,28 @@ class Maze:
         try:
             with open(self.env, "r") as f:
                 for line in f:
-                    line = (line.strip()).split("=")
-                    if line[0] == "WIDTH":
-                        self.width = int(line[1])
-                    elif line[0] == "HEIGHT":
-                        self.height = int(line[1])
-                    elif line[0] == "ENTRY":
-                        data = line[1].split(",")
+                    line = ((line.strip()).split("="))
+                    if line[0].upper() == Config.WIDTH.value:
+                        val = line[1].split()
+                        self.width = int(val[0])
+                    elif line[0].upper() == Config.HEIGHT.value:
+                        val = line[1].split()
+                        self.height = int(val[0])
+                    elif line[0].upper() == Config.ENTRY.value:
+                        val = line[1].split()
+                        data = val[0].split(",")
                         self.entry = (int(data[0]), int(data[1]))
-                    elif line[0] == "EXIT":
-                        data = line[1].split(",")
+                    elif line[0].upper() == Config.EXIT.value:
+                        val = line[1].split()
+                        data = val[0].split(",")
                         self.exit = (int(data[0]), int(data[1]))
-                    elif line[0] == "PERFECT":
-                        self.perfect = True if line[1] == "True" else False
-                    elif line[0] == "OUTPUT_FILE":
-                        self.output_file = line[1]
+                    elif line[0].upper() == Config.PERFECT.value:
+                        val = line[1].split()
+                        self.perfect = (
+                            True if val[0].upper() == "TRUE" else False)
+                    elif line[0].upper() == Config.OUTPUT_FILE.value:
+                        val = line[1].split()
+                        self.output_file = val[0]
         except FileNotFoundError:
             print("ERROR: file not found")
             exit(1)
@@ -50,7 +66,7 @@ class Maze:
             print("ERROR: file permissions")
             exit(1)
         except Exception as e:
-            print(f"Unknoun ERROR: {e}")
+            print(f"Unknown ERROR: {e}")
             exit(1)
 
     def _validate_entry_exit(self) -> None:
@@ -92,7 +108,7 @@ class Maze:
     def save_to_file(self) -> None:
         """Write the current maze grid to the configured output file."""
         try:
-            with open(self.hex_file, "w") as f:
+            with open(self.output_file, "w") as f:
                 for y in range(self.height):
                     for x in range(self.width):
                         f.write(self._cell_to_hex((y, x)))
@@ -116,6 +132,15 @@ class Maze:
                     }
                 lis.append(cell)
             self.grid.append(lis)
+
+    def print_data(self) -> None:
+        """Print config data and dump the grid for debugging purposes."""
+        print(f"WIDTH: {self.width}")
+        print(f"HEIGHT: {self.height}")
+        print(f"ENTRY: {self.entry}")
+        print(f"EXIT: {self.exit}")
+        print(f"OUTPUT_FILE: {self.output_file}")
+        print(f"PERFECT: {self.perfect}")
 
     def get_neighbors_cells(self, cell: Coord) -> list[Coord]:
         """ Get only neigbors of an cell that are not visited
@@ -171,7 +196,7 @@ class Maze:
         while stack:
             neighbors = self.get_neighbors_cells(stack[-1])
             self.drawer.draw_maze(stack[-1])
-            time.sleep(0.5)
+            time.sleep(0.01)
             if neighbors:
                 y1, x1 = neighbor = choice(neighbors)
                 self.remove_walls(stack[-1], neighbor)
