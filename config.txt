@@ -1,13 +1,6 @@
-<<<<<<< HEAD
 WIDTH=15
-HEIGHT=13
+HEIGHT=14 #comment
 ENTRY=0,0
-EXIT=1,1
-=======
-WIDTH=10
-HEIGHT=8
-ENTRY=0,0
-EXIT=6,6
->>>>>>> 4578e57 (solve_pfs)
-OUTPUT_FILE=maze.txt
-PERFECT=TRUE
+EXIT=14,13
+OUTPUT_FILE = maze.txt
+perfect=true
