@@ -1,3 +1,8 @@
+
+<p align="center">
+  <img src="https://github.com/mirr-x/42-CC-1337/blob/main/images/amazeing_.png" alt="get_next_line banner">
+</p>
+
 *This project has been created as part of the 42 curriculum by bdebbagh, molahrech.*
 
 ## Description
