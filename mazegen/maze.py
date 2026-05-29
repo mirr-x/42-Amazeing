@@ -1,4 +1,5 @@
 from random import choice, randrange
+import time
 from .draw_maze import DrawMaze
 from .types import Coord
 
@@ -68,7 +69,7 @@ class Maze:
         }
         parsed_keys: set[str] = set()
         try:
-            with open(self.env, "r") as f:
+            with open(self.env, "r", encoding="utf-8") as f:
                 for line_number, raw_line in enumerate(f, start=1):
                     line = raw_line.strip()
                     if not line or line.startswith("#"):
@@ -129,7 +130,7 @@ class Maze:
         except ValueError as e:
             print(f"ERROR: invalid config - {e}")
             exit(1)
-        except Exception as e:
+        except OSError as e:
             print(f"Unknown ERROR: {e}")
             exit(1)
 
@@ -168,7 +169,7 @@ class Maze:
     def save_to_file(self) -> None:
         """Write the current maze grid to the configured output file."""
         try:
-            with open(self.output_file, "w") as f:
+            with open(self.output_file, "w", encoding="utf-8") as f:
                 for y in range(self.height):
                     for x in range(self.width):
                         f.write(self._cell_to_hex((y, x)))
@@ -179,7 +180,7 @@ class Maze:
                 bfs_path = self.solve_bfs()
                 ll = self.path_to_directions(bfs_path)
                 f.write(f"{ll}\n")
-        except Exception:
+        except OSError:
             print("save_to_file(): ERROR")
             exit(1)
 
@@ -327,20 +328,25 @@ class Maze:
 
     def _build_maze_dfs(self) -> None:
         """Generate the maze using iterative DFS with backtracking."""
+        delay = 0.01
         start = self.entry
         stack: list[Coord] = [start]
         y, x = start
         self.grid[y][x]["visited"] = True
 
         self._place_42_pattern()
+        self.drawer.draw_maze(start)
 
         while stack:
-            neighbors = self.get_neighbors_cells(stack[-1])
+            current = stack[-1]
+            neighbors = self.get_neighbors_cells(current)
             if neighbors:
                 y1, x1 = neighbor = choice(neighbors)
-                self.remove_walls(stack[-1], neighbor)
+                self.remove_walls(current, neighbor)
                 self.grid[y1][x1]["visited"] = True
                 stack.append(neighbor)
+                self.drawer.draw_maze(neighbor)
+                time.sleep(delay)
             else:
                 stack.pop()
 

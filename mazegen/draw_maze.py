@@ -1,5 +1,5 @@
 from typing import Protocol
-import os
+import sys
 from .types import Coord
 import time
 
@@ -24,6 +24,8 @@ class DrawMaze:
     PURPLE = "\033[95m"           # entry      → purple ██
     RED = "\033[91m"           # exit       → red ██
     BLOCK = "██"
+    BALL = "[]"
+    _first_draw = True
     COLORS = [
         "\033[97m",   # white
         "\033[93m",   # yellow
@@ -81,7 +83,10 @@ class DrawMaze:
             current_cell: Coord,
             path: list[Coord] | None = None) -> None:
         """Draw maze — white walls, black passages, gray 42, red path ⚽."""
-        os.system("clear")
+        if self._first_draw:
+            sys.stdout.write("\033[2J")
+            self._first_draw = False
+        sys.stdout.write("\033[H")
 
         h = self.maze.height
         w = self.maze.width
@@ -104,27 +109,36 @@ class DrawMaze:
                     cy = (ry - 1) // 2
                     cx = (rx - 1) // 2
 
-                    if self._is_42_cell(cy, cx):
-                        line += self.GRAY + self.BLOCK + self.RESET
+                    if (cy, cx) == current_cell:
+                        line += self.PURPLE + self.BLOCK + self.RESET
+                    elif (cy, cx) in path:
+                        line += self.PURPLE + self.BLOCK + self.RESET
                     elif (cy, cx) == self.maze.entry:
                         line += self.PURPLE + self.BLOCK + self.RESET
                     elif (cy, cx) == self.maze.exit:
                         line += self.RED + self.BLOCK + self.RESET
-                    elif (cy, cx) in path:
-                        line += f"{self.RED}⚽{self.RESET}"
+                    elif self._is_42_cell(cy, cx):
+                        line += self.GRAY + self.BLOCK + self.RESET
                     else:
                         line += self.BLACK + self.BLOCK + self.RESET
                 # PASSAGES (between cells)
                 else:
                     line += self.BLACK + self.BLOCK + self.RESET
-            print(line)
+            sys.stdout.write(line + "\n")
+
+        sys.stdout.flush()
 
     def animate_path(
         self,
         path: list[Coord],
-        delay: float = 0.1,
+        delay: float = 0.008,
     ) -> None:
         """Animate a path by progressively revealing its cells."""
-        for i in range(1, len(path) + 1):
-            self.draw_maze(self.maze.entry, path[:i])
-            time.sleep(delay)
+        sys.stdout.write("\033[?25l")
+        try:
+            for i in range(1, len(path) + 1):
+                self.draw_maze(path[i - 1], path[:i])
+                time.sleep(delay)
+        finally:
+            sys.stdout.write("\033[?25h")
+            sys.stdout.flush()

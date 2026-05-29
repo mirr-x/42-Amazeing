@@ -1,6 +1,6 @@
-WIDTH=15
-HEIGHT=14 #comment
+WIDTH=50
+HEIGHT=19 #comment
 ENTRY=0,0
-EXIT=14,13
+EXIT=49,18
 OUTPUT_FILE = maze.txt
 perfect=true
